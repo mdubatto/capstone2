@@ -19,7 +19,6 @@ import gensim
 from sklearn.model_selection import train_test_split
 
 
-print('Hello')
 
 def extract_bow_from_raw_text(text_as_string):
     """Extracts bag-of-words from a raw text string.
