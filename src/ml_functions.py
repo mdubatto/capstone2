@@ -8,7 +8,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.decomposition import NMF, PCA
 from sklearn.model_selection import train_test_split, RandomizedSearchCV, GridSearchCV, cross_validate
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix, f1_score
+from sklearn.metrics import classification_report, confusion_matrix, f1_score, roc_auc_score
 import xgboost.sklearn as xgb
 import xgboost as x
 import gensim
@@ -41,25 +41,31 @@ def modelfit(alg, X, y, useTrainCV=True, cv_folds=5, early_stopping_rounds=50):
 
     if useTrainCV:
         xgb_param = alg.get_xgb_params()
-        y = pd.get_dummies(y)
+        # y = pd.get_dummies(y)
         xgtrain = x.DMatrix(X, label=y)
         cvresult = x.cv(xgb_param, xgtrain, num_boost_round=alg.get_params()['n_estimators'], nfold=cv_folds,
             metrics='auc', early_stopping_rounds=early_stopping_rounds)
+        print("Num of n_estimators:", cvresult.shape[0])
         alg.set_params(n_estimators=cvresult.shape[0])
 
     #Fit the algorithm on the data
-    alg.fit(X, y, eval_metric='f1_weighted')
+    alg.fit(X, y, eval_metric='auc')
 
     #Predict training set:
     y_pred = alg.predict(X)
-#     dtrain_predprob = alg.predict_proba(X)[:,1]
+    dtrain_predprob = alg.predict_proba(X)[:,1]
 
     #Print model report:
     print("\nModel Report")
     print(classification_report(y, y_pred))
 
-#     print "AUC Score (Train): %f" % metrics.roc_auc_score(y, dtrain_predprob)
+    print(f"AUC Score (Train): {roc_auc_score(y, dtrain_predprob)}")
 
-    feat_imp = pd.Series(alg.booster().get_fscore()).sort_values(ascending=False)
-    feat_imp.plot(kind='bar', title='Feature Importances')
-    plt.ylabel('Feature Importance Score')
+    # feat_imp = pd.Series(alg.booster().get_fscore()).sort_values(ascending=False)
+    # feat_imp.plot(kind='bar', title='Feature Importances')
+    # plt.ylabel('Feature Importance Score')
+
+def get_scores(y_true, y_pred, y_proba):
+    print(classification_report(y_true, y_pred))
+    print(confusion_matrix(y_true, y_pred))
+    print("ROC AUC:", roc_auc_score(y_true, y_proba, average='weighted'))
