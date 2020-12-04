@@ -24,4 +24,37 @@ Each observation contained a headline of a news article.
 
 ## Natural Language Processing
 
-### Word2Vec
+The text was first cleaned by removing stopwords and punctuation. Lemmatization (nltk.wordnet.Lemmatizer) was used to reduce each word to its meaning in order to consolidate words. Two different approaches to processing the text and reducing the dimensions were taken: Word Embedding and TF-IDF with PCA
+
+### Word Embedding Pipeline
+
+Word embedding was performed using the `Word2Vec` class from `gensim.model`. The model creates a dictionary of word vectors. In order to create headline vectors, I averaged the vectors of each word in the headline. This was done using the below functions.
+
+```python
+def word_embed(bow_train, bow_test, min_count=2, size=100, seed=2):
+    model = gensim.models.Word2Vec(bow_train, min_count = min_count, size = size, window = 5, seed=seed)
+
+    vec_train = vectorize(bow_train, model, size)
+    vec_test = vectorize(bow_test, model, size)
+    return vec_train, vec_test
+
+def vectorize(bow, model, size):
+    corpus_vec = np.zeros((len(bow),size))
+    for i, row in enumerate(bow):
+        row_vec = np.zeros(size)
+        for word in row:
+            try:
+                row_vec += model.wv[word]
+            except:
+                pass
+        corpus_vec[i] = row_vec/len(row)
+    return corpus_vec
+```
+
+I tried tuning the size by just running an un-tuned random forest model on the embedding data and didn't see any reliable pattern (this image was taken before I reduced the number of classes).
+
+![W2V Size Tuning](images/wv_size_tuning.png)
+
+I began looking at cosine similarities of random headline instead. I tried changing min_count to 2, but a few headline vectors were set to all zeros since there were too few "important" words in those headlines. To combat this, I added stopwords back in. With a vector size of 50 and a min_count of 2 (after stopwords were allowed back in), I got this result:
+
+![Cosine Similarity Example](images/cosim_example.png)
