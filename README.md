@@ -76,6 +76,13 @@ The performance of each model is shown below. The Random Forest model using word
 
 ![Model Comparison](images/results.png)
 
+## Next Steps
+* Try a pre-tuned word embedding model
+* Try Baysian Grid Search to tune the models
+* See if a Neural Network performs better
+
+## Appendix
+
 ![PCA + RF](images/PCAandRF_CM.png)
 ![PCA + XGB](images/PCAandXGB_CM.png)
 
@@ -86,8 +93,3 @@ The performance of each model is shown below. The Random Forest model using word
 ![W2V1000 + XGB](images/WV1000XGB_CM.png)
 
 ![Results](images/results_table.png)
-
-## Next Steps
-* Try a pre-tuned word embedding model
-* Try Baysian Grid Search to tune the models
-* See if a Neural Network performs better
